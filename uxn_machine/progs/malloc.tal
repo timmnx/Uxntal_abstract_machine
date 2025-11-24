@@ -1,0 +1,68 @@
+( malloc.tal )
+
+( devices )
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+
+%PrintDigit { #30 ADD EMIT }
+%PRINT_BYTE { SWP PrintNibble PrintNibble }
+%NewLine { #0a .Console/write DEO }
+
+%ToMask { #ff EOR #01 ADD }
+%PrintNibble ( nibble -- ) {
+    DUP LIT "0 ADD SWP
+    #09 GTH ToMask
+    LIT2 "a "9 #01 ADD SUB
+    AND ADD .Console/write DEO
+}
+
+
+( init )
+|0100
+    #01 PrintNibble NewLine
+    #01 ;print_heap JSR2
+    ( #01 ;malloc JSR2 )
+    ( #01 ;print_heap JSR2 )
+    ( #02 ;malloc JSR2 )
+    ( #01 ;print_heap JSR2 )
+BRK
+
+
+%TO_SHORT { #00 SWP } ( byte -- short )
+%MALLOC_LOOK_UP { #0004 SUB2 } ( a -- a' )
+@malloc ( i -- a )
+    ( counter init to 0 )
+    #0000
+
+    &while                  ( ws: counter )
+        MALLOC_LOOK_UP      ( ws: counter' )
+        LDAk                ( ws: counter' v )
+        ,&while JCN         ( ws: counter' )
+    
+    DUP             ( ws: counter counter )
+    ( tag malloc )
+    #01 SWP         ( ws: counter 01 counter )
+    STA             ( ws: counter )
+JMP2r
+
+@print_heap ( i -- )
+    DUP PrintNibble NewLine
+    TO_SHORT
+    DUP2 PRINT_BYTE NewLine
+    #0000 SWP SUB2 ( a i -- a-i )
+    PRINT_BYTE NewLine
+    
+    ( ,&while JCNk )
+    ,&end JMP
+
+    &while              ( ws: addr16 -- )
+        LDAk            ( ws: addr16 int8 -- )
+        DUP             ( ws: addr16 int8 int8 -- )
+        #04 SFT         ( ws: addr16 int8 0000int4 -- )
+        PrintNibble     ( ws: addr16 int8 -- )
+        #0f AND         ( ws: addr16 0000int4 -- )
+        PrintNibble     ( ws: addr16 -- )
+        INC2            ( ws: addr16' -- )
+        ,&while JCNk
+    &end
+JMP2r
+

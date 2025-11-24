@@ -1,0 +1,118 @@
+( print.tal )
+
+( devices )
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+
+%EMIT { .Console/write DEO }
+%NewLine { #0a .Console/write DEO }
+%PrintSpace { #20 .Console/write DEO }
+
+%ToMask {
+    #ff EOR
+    #01 ADD
+}
+
+%PrintNibble ( nibble -- ) {
+    DUP LIT "0 ADD SWP
+    #09 GTH ToMask
+    LIT2 "a "9 #01 ADD SUB
+    AND ADD .Console/write DEO
+}
+( h -- h h -- h h "0 -- h S0 )
+( S0 h x09 -- S0 h>9 -- S0 Mh>9 )
+( S0 Mh>9 "a "9 x01 -- S0 Mh>9 "a "9+1 -- S0 Mh>9 d )
+( S0 d -- S -- )
+
+%PrintByte ( byte -- ) {
+    DUP
+    #04 SFT PrintNibble
+    #0f AND PrintNibble
+}
+
+%PrintAddr ( short -- ) {
+    LDA PrintByte
+}
+
+%PrintShort ( short -- ) {
+    SWP PrintByte PrintByte
+}
+
+( init )
+|0100
+    #f0 PrintByte NewLine
+    #e1 PrintByte NewLine
+    #d2 PrintByte NewLine
+    #c3 PrintByte NewLine
+    #b4 PrintByte NewLine
+    #a5 PrintByte NewLine
+    #96 PrintByte NewLine
+    #87 PrintByte NewLine
+    #78 PrintByte NewLine
+    #69 PrintByte NewLine
+    #5a PrintByte NewLine
+    #4b PrintByte NewLine
+    #3c PrintByte NewLine
+    #2d PrintByte NewLine
+    #1e PrintByte NewLine
+    #0f PrintByte NewLine
+
+    NewLine
+
+    #fff0 #fffe ;PrintMem JSR2
+    NewLine
+    #cc #fff8 STA
+    #abcd #fffa STA2
+    #fff0 #fffe ;PrintMem JSR2
+
+    NewLine
+    LIT2 "e "r LIT2 "o "f LIT2 "e "b
+    EMIT EMIT EMIT EMIT EMIT EMIT NewLine
+    #fff0 ;DumpLine JSR2
+    NewLine
+    LIT2 "r "e LIT2 "t "f LIT "a
+    EMIT EMIT EMIT EMIT EMIT NewLine
+
+    NewLine
+
+BRK
+
+%GE2k ( shortA shortB -- shortA shortB bool ) {
+    LTH2k #01 EOR
+}
+
+
+@DumpLine ( short -- )
+    ,&init JMP
+    &addr $2
+    &init
+        #04 SFT2 #40 SFT2
+        ;&addr STA2k POP2
+        PrintShort
+        LIT ": EMIT
+
+    #0010 #0000
+    &forloop
+        LTH2k ;&endfor JCN2
+        PrintSpace
+        DUP2
+        ;&addr LDA2
+        ADD2
+        PrintAddr
+        #0001 ADD2
+        ;&forloop JMP2
+    &endfor
+        POP2 POP2
+JMP2r
+
+@PrintMem   ( min2 max2 -- )
+    SWP2    ( max2 min2 -- )
+    &while
+        LTH2k ;&end JCN2        ( max2 min2 )
+        DUP2 PrintShort
+        LIT ": EMIT PrintSpace
+        DUP2 PrintAddr NewLine
+        #0001 ADD2
+        ;&while JMP2
+    &end
+        POP2 POP2
+JMP2r
