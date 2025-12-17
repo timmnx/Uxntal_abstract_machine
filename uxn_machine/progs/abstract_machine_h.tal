@@ -1,0 +1,28 @@
+( abstract_machine_h.tal )
+
+%NULL { #0000 }
+( -------------------< Syntaxic terms >-------------------- )
+( type sterm =                                              )
+(   | Int of int    ~> < 01 | 01 | int >                    )
+(   | Add of t * t  ~> < 02 | 02 | [*sterm, *sterm] >       )
+(   | Sub of t * t  ~> < 03 | 02 | [*sterm, *sterm] >       )
+(                                                           )
+( --------------------------------------------------------- )
+%Int { #0101 }
+%Add { #0202 }
+%Sub { #0302 }
+
+( --------------------< Continuation type >-------------------- )
+( type cont =                                                   )
+(   | Id                    ~> < 01 | 01 | >                    )
+(   | Fn_add of int * cont  ~> < 02 | 02 | [int, *cont] >       )
+(   | Ar_add of t * cont    ~> < 03 | 02 | [*sterm, *cont] >    )
+(   | Fn_sub of int * cont  ~> < 04 | 02 | [int, *cont] >       )
+(   | Ar_sub of t * cont    ~> < 05 | 02 | [*sterm, *cont] >    )
+(                                                               )
+( ------------------------------------------------------------- )
+%Id { #0100 }
+%Fn_add { #0202 }
+%Ar_add { #0302 }
+%Fn_sub { #0402 }
+%Ar_sub { #0502 }

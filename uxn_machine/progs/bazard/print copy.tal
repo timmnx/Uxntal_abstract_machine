@@ -1,5 +1,63 @@
 ( print.tal )
 
+( devices )
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+
+
+
+
+
+%EMIT { .Console/write DEO }
+%NewLine { #0a .Console/write DEO }
+%PrintSpace { #20 .Console/write DEO }
+
+%ToMask { #ff EOR #01 ADD }
+%PrintNibble ( nibble -- ) {
+    DUP LIT "0 ADD SWP
+    #09 GTH ToMask
+    LIT2 "a "9 #01 ADD SUB
+    AND ADD .Console/write DEO
+}
+( h -- h h -- h h "0 -- h S0 )
+( S0 h x09 -- S0 h>9 -- S0 Mh>9 )
+( S0 Mh>9 "a "9 x01 -- S0 Mh>9 "a "9+1 -- S0 Mh>9 d )
+( S0 d -- S -- )
+%PrintByte ( byte -- ) {
+    DUP
+    #04 SFT PrintNibble
+    #0f AND PrintNibble
+}
+%PrintAddr ( short -- ) { LDA PrintByte }
+%PrintShort ( short -- ) { SWP PrintByte PrintByte }
+
+
+
+
+
+( init )
+|0100
+    #ffa6 #fffd ;DumpMem JSR2
+    NewLine
+
+    #cc #fff8 STA
+    #abcd #fffa STA2
+
+    LIT2 "m "t
+    #ffa6 #ffff ;DumpMem JSR2
+    EMIT EMIT
+    NewLine
+    NewLine
+
+    LIT2 "m "t
+    #ffa6 #0000 ;DumpMem JSR2
+    EMIT EMIT
+    NewLine
+BRK
+
+
+
+
+
 @DumpLine ( short -- )
     #04 SFT2 #40 SFT2   ( short_addr -- )
     DUP2 PrintShort
@@ -18,12 +76,16 @@
         POP2 POP2             ( -- )
 JMP2r
 
-@DumpMem ( short_addr1 short_addr2 -- ) ( Precondition : short_addr1 < short_addr2 )
-    ( OVR2 OVR2 SWP2      ( short_addr1 short_addr2 short_addr2 short_addr1 -- )
+
+
+
+
+@DumpMem ( short_addr1 short_addr2 -- )
+    OVR2 OVR2 SWP2      ( short_addr1 short_addr2 short_addr2 short_addr1 -- )
     #0000 ROT2 ROT2   ( short_addr1 short_addr2 0000 short_addr2 short_addr1 -- )
     LTH2 ;&end JCN2     ( short_addr1 short_addr2 0000 -- )
     POP2                ( short_addr1 short_addr2 -- )
-    OVR2 SUB2 #04 SFT2  short_addr1 short_delta -- )
+    OVR2 SUB2 #04 SFT2  ( short_addr1 short_delta -- )
 
     DUP2 PrintShort
     PrintSpace PrintSpace PrintSpace
@@ -38,7 +100,6 @@ JMP2r
     EMIT PrintSpace PrintSpace EMIT PrintSpace PrintSpace
     EMIT PrintSpace PrintSpace EMIT NewLine
     
-    #04 SFT2 OVR2 #04 SFT2 SUB2
     #0000  ( short_addr short_delta 0000 -- )
     &forloop                        ( short_addr short_delta short_i -- )
         LTH2k ;&end JCN2            ( short_addr short_delta short_i -- )

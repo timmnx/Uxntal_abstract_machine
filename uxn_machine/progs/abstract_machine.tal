@@ -1,0 +1,81 @@
+( abstract_machine.tal )
+
+( -------------------< Syntaxic terms >-------------------- )
+( type sterm =                                              )
+(   | Int of int    ~> < 01 | 01 | int >                    )
+(   | Add of t * t  ~> < 02 | 02 | [*sterm, *sterm] >       )
+(   | Sub of t * t  ~> < 03 | 02 | [*sterm, *sterm] >       )
+(                                                           )
+( --------------------------------------------------------- )
+
+( --------------------< Continuation type >-------------------- )
+( type cont =                                                   )
+(   | Id                    ~> < 01 | 01 | >                    )
+(   | Fn_add of int * cont  ~> < 02 | 02 | [int, *cont] >       )
+(   | Ar_add of t * cont    ~> < 03 | 02 | [*sterm, *cont] >    )
+(   | Fn_sub of int * cont  ~> < 04 | 02 | [int, *cont] >       )
+(   | Ar_sub of t * cont    ~> < 05 | 02 | [*sterm, *cont] >    )
+(                                                               )
+( ------------------------------------------------------------- )
+
+@eval ( sterm* cont* -- sterm* )
+    SWP2 LDA2k                      ( cont* sterm* [ tag | size ]   )
+    DUP2 Int EQU2 ,&case_Int JCN    ( cont* sterm* [ tag | size ]   )
+    DUP2 Add EQU2 ,&case_Add JCN    ( cont* sterm* [ tag | size ]   )
+    DUP2 Sub EQU2 ,&case_Sub JCN    ( cont* sterm* [ tag | size ]   )
+        POP2 POP2 POP2 NULL         ( NULL                          )
+        JMP2r
+    &case_Int
+        POP2                        ( cont* sterm_int*              )
+        ;apply JMP2
+    &case_Add
+        POP2 INC2 INC2 LDA2k        ( cont* sterm*+2 s1*            )
+        ROT2 ROT2                   ( s1* cont* sterm*+2            )
+        INC2 INC2 LDA2              ( s1* cont* s2*                 )
+        Ar_add ;push_obj JSR2       ( s1* cont'*                    )
+        ;eval JMP2
+    &case_Sub
+        POP2 INC2 INC2 LDA2k        ( cont* sterm*+2 s1*            )
+        ROT2 ROT2                   ( s1* cont* sterm*+2            )
+        INC2 INC2 LDA2              ( s1* cont* s2*                 )
+        Ar_sub ;push_obj JSR2       ( s1* cont'*                    )
+        ;eval JMP2
+
+@apply ( cont* sterm_int* -- sterm_int* )
+    SWP2 LDA2k                          ( sterm_int* cont* [ tag | size ]   )
+    DUP2 Id EQU2 ,&case_Id JCN          ( sterm_int* cont* [ tag | size ]   )
+    DUP2 Fn_add EQU2 ,&case_Fn_add JCN  ( sterm_int* cont* [ tag | size ]   )
+    DUP2 Ar_add EQU2 ,&case_Ar_add JCN  ( sterm_int* cont* [ tag | size ]   )
+    DUP2 Fn_sub EQU2 ,&case_Fn_sub JCN  ( sterm_int* cont* [ tag | size ]   )
+    DUP2 Ar_sub EQU2 ,&case_Ar_sub JCN  ( sterm_int* cont* [ tag | size ]   )
+        POP2 POP2 POP2 NULL             ( NULL                              )
+        JMP2r
+    &case_Id
+        POP2 POP2                       ( sterm_int*                        )
+        JMP2r
+    &case_Fn_add
+        POP2 INC2 INC2 LDA2k            ( sterm_int* cont*+2 int_fn         )
+        ROT2 INC2 INC2 LDA2             ( cont*+2 int_fn int_sterm          )
+        ROT2 INC2 INC2 LDA2             ( int_fn int_sterm cont'*           )
+        ROT2 ROT2 ADD2                  ( cont'* int'                       )
+        Int ;push_obj JSR2              ( cont'* sterm_int'*                )
+        SWP2 ;eval JMP2
+    &case_Ar_add
+        POP2 INC2 INC2 LDA2k            ( sterm_int* cont*+2 sterm'*        )
+        ROT2 INC2 INC2 LDA2             ( cont*+2 sterm'* int_sterm         )
+        ROT2 INC2 INC2 LDA2             ( sterm'* int_sterm cont'*          )
+        SWP2 Fn_add ;push_obj JSR2      ( sterm'* cont''*                   )
+        ;eval JMP2
+    &case_Fn_sub
+        POP2 INC2 INC2 LDA2k            ( sterm_int* cont*+2 int_fn         )
+        ROT2 INC2 INC2 LDA2             ( cont*+2 int_fn int_sterm          )
+        ROT2 INC2 INC2 LDA2             ( int_fn int_sterm cont'*           )
+        ROT2 ROT2 SUB2                  ( cont'* int'                       )
+        Int ;push_obj JSR2              ( cont'* sterm_int'*                )
+        SWP2 ;eval JMP2
+    &case_Ar_sub
+        POP2 INC2 INC2 LDA2k            ( sterm_int* cont*+2 sterm'*        )
+        ROT2 INC2 INC2 LDA2             ( cont*+2 sterm'* int_sterm         )
+        ROT2 INC2 INC2 LDA2             ( sterm'* int_sterm cont'*          )
+        SWP2 Fn_sub ;push_obj JSR2      ( sterm'* cont''*                   )
+        ;eval JMP2

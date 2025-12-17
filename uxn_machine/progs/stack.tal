@@ -1,0 +1,75 @@
+
+@initStack ( -- )
+    ;Stack/data ;Stack/pointer STA2
+JMP2r
+
+@push_short ( int16 -- addr )
+    ;Stack/pointer LDA2     ( int16 ptr*                                )
+    DUP2 INC2 INC2          ( int16 ptr* ptr*+2                         )
+    ;Stack/data LTH2        ( int16 ptr* ptr*+2<&data                   )
+    ,&fail JCN              ( int16 ptr*                                )
+        DUP2 ROT2 ROT2      ( ptr* int16 ptr*                           )
+        STA2                ( ptr*                      ptr* = int16    )
+        DUP2 INC2 INC2      ( ptr* ptr*+2                               )
+        ;Stack/pointer STA2 ( ptr*                      ptr = ptr*+2    )
+        JMP2r
+    &fail                   ( int16 ptr*                                )
+        POP2 POP2 #0000   ( 0000                                      )
+        JMP2r
+
+( >-------------------------------------------------------------------< )
+(                                                                       )
+( Les objets sont représentés à l'envers dans la pile :                 )
+(   -> obj = < tag | size | data[0] data[1] ... data[size-1] >          )
+( Dans la pile :                                                        )
+(   -> data[size-1] ... data[1] data[0] [tag | size]                    )
+(                                                                       )
+( Rappels :                                                             )
+(   - data[i] est un short (2 octets)                                   )
+(   - size et tag sont sur un octet chacun                              )
+(   - [tag | size ] est un short                                        )
+(                                                                       )
+( >-------------------------------------------------------------------< )
+@push_obj ( obj -- addr )
+    #00 OVR INC2 #10 SFT2       ( data[0:size-1] [tag|size] n := 2*(size+1)                     )
+    ;Stack/pointer LDA2         ( data[0:size-1] [tag|size] n ptr*                              )
+    DUP2 ROT2 ADD2              ( data[0:size-1] [tag|size] ptr* ptr*+n                         )
+    ;Stack/data #0001 SUB2    ( data[0:size-1] [tag|size] ptr* ptr*+n &data-1                 )
+    GTH2                        ( data[0:size-1] [tag|size] ptr* ptr*+n>=&data                  )
+    ,&enought_space JCN         ( data[0:size-1] [tag|size] ptr*                                )
+        POP2                    ( data[0:size-1] [tag|size]                                     )
+        SWP POP                 ( data[0:size-1] size                                           )
+        &clean                  ( data[0:size-1] size                                           )
+            DUP #00 EQU         ( data[0:size-1] size size=0                                    )
+            ,&endclean JCN      ( data[0:size-1] size                                           )
+            ROT ROT POP2        ( data[0:size-2] size                                           )
+            #01 SUB ,&clean JMP ( data[0:size-2] size-1                                         )
+        &endclean               ( size                                                          )
+            POP2 #0000        ( 0000                                                          )
+            JMP2r
+    &enought_space              ( data[0:size-1] [tag|size] ptr*                                )
+        DUP2 ;&addr STA2        ( data[0:size-1] [tag|size] ptr*                                )
+        SWP2 DUP #00 SWP        ( data[0:size-1] ptr* [tag|size] n                              )
+        ROT2 ROT2               ( data[0:size-1] n ptr* [tag|size]                              )
+        OVR2                    ( data[0:size-1] n ptr* [tag|size] ptr*                         )
+        STA2                    ( data[0:size-1] n ptr*                     ptr* := [tag|size]  )
+        INC2 INC2               ( data[0:size-1] n ptr*+2                                       )
+        &write                  ( data[0:n-1] n ptr*                                            )
+            OVR2                ( data[0:n-1] n ptr* n                                          )
+            #0000 EQU2        ( data[0:n-1] n ptr* n=0                                        )
+            ,&endwrite JCN      ( data[0:n-1] n ptr*                                            )
+            ROT2 OVR2           ( data[0:n-2] n ptr* data[n-1] ptr*                             )
+            STA2 INC2 INC2      ( data[0:n-2] n ptr*+2                      ptr* := data[n-1]   )
+            ( ROT2 )
+            SWP2 #0001 SUB2   ( data[0:n-2] ptr*+2 n-1                                        )
+            SWP2 ,&write JMP    ( data[0:n-2] n-1 ptr*+2                                        )
+        &endwrite               ( 0 ptr*                                                        )
+            ;Stack/pointer STA2 ( ptr*                                      ptr = ptr'*         )
+            POP2 ;&addr LDA2    ( addr                                                          )
+            JMP2r
+    [ &addr $2 ]
+
+@Stack
+    &pointer $2
+    &data
+

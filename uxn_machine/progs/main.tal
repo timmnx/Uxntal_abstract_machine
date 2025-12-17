@@ -1,0 +1,55 @@
+( main.tal )
+( devices )
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+
+~progs/print_h.tal
+
+~progs/abstract_machine_h.tal
+
+( init )
+|0100
+    ;initStack JSR2
+
+    ( #2806 #2004 #1902 #2005
+    #fa04 ;push_obj JSR2 POP2
+
+    Id ;push_obj JSR2 PrintShort NewLine NewLine
+    ;Stack ;Stack/pointer LDA2
+    ;DumpMem JSR2
+    NewLine
+    ;Stack PrintShort
+    PrintSpace LIT "- EMIT LIT "> EMIT PrintSpace
+    ;Stack/pointer LDA2 PrintShort
+    NewLine
+    NewLine )
+    ;Stack PrintShort
+    PrintSpace LIT "- EMIT LIT "> EMIT PrintSpace
+    ;Stack/pointer LDA2 PrintShort
+    NewLine
+    NewLine
+
+    #0001 Int ;push_obj JSR2    ( int* )
+    #0002 Int ;push_obj JSR2    ( int* int'* )
+    Add ;push_obj JSR2            ( add* )
+    Id ;push_obj JSR2             ( add* id* )
+
+    ;Stack ;Stack/pointer LDA2
+    ;DumpMem JSR2
+    NewLine
+
+    ;eval JSR2               ( sterm* )
+    PrintShort NewLine
+    PrintShort NewLine
+    NewLine
+
+    ;Stack ;Stack/pointer LDA2
+    ;DumpMem JSR2
+    ( INC2 INC2 LDA2 PrintShort NewLine )
+
+BRK
+
+~progs/abstract_machine.tal
+
+~progs/print.tal
+
+~progs/stack.tal

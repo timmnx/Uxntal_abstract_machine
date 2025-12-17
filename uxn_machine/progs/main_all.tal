@@ -1,3 +1,50 @@
+( main.tal )
+( devices )
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+
+%EMIT { .Console/write DEO }
+%NewLine { #0a .Console/write DEO }
+%PrintSpace { #20 .Console/write DEO }
+
+%ToMask { #ff EOR #01 ADD }
+%PrintNibble ( nibble -- ) {
+    DUP LIT "0 ADD SWP
+    #09 GTH ToMask
+    LIT2 "a "9 #01 ADD SUB
+    AND ADD .Console/write DEO
+}
+%PrintByte ( byte -- ) {
+    DUP
+    #04 SFT PrintNibble
+    #0f AND PrintNibble
+}
+%PrintAddr ( short -- ) { LDA PrintByte }
+%PrintShort ( short -- ) { SWP PrintByte PrintByte }
+
+( init )
+|0100
+    ;initStack JSR2
+
+    ;Stack ;Stack/data #000f ADD2
+    ;DumpMem JSR2
+    NewLine
+    
+    ;Stack/pointer PrintShort
+    NewLine
+    ;Stack/pointer LDA2 PrintShort
+    NewLine
+
+    #2806 push DUP2
+    PrintShort NewLine
+    LDA2 PrintShort
+    NewLine NewLine
+
+    ;Stack ;Stack/data #000f ADD2
+    ;DumpMem JSR2
+    NewLine
+
+BRK
+
 ( print.tal )
 
 @DumpLine ( short -- )
@@ -18,12 +65,12 @@
         POP2 POP2             ( -- )
 JMP2r
 
-@DumpMem ( short_addr1 short_addr2 -- ) ( Precondition : short_addr1 < short_addr2 )
-    ( OVR2 OVR2 SWP2      ( short_addr1 short_addr2 short_addr2 short_addr1 -- )
+@DumpMem ( short_addr1 short_addr2 -- )
+    OVR2 OVR2 SWP2      ( short_addr1 short_addr2 short_addr2 short_addr1 -- )
     #0000 ROT2 ROT2   ( short_addr1 short_addr2 0000 short_addr2 short_addr1 -- )
     LTH2 ;&end JCN2     ( short_addr1 short_addr2 0000 -- )
     POP2                ( short_addr1 short_addr2 -- )
-    OVR2 SUB2 #04 SFT2  short_addr1 short_delta -- )
+    OVR2 SUB2 #04 SFT2  ( short_addr1 short_delta -- )
 
     DUP2 PrintShort
     PrintSpace PrintSpace PrintSpace
@@ -38,7 +85,6 @@ JMP2r
     EMIT PrintSpace PrintSpace EMIT PrintSpace PrintSpace
     EMIT PrintSpace PrintSpace EMIT NewLine
     
-    #04 SFT2 OVR2 #04 SFT2 SUB2
     #0000  ( short_addr short_delta 0000 -- )
     &forloop                        ( short_addr short_delta short_i -- )
         LTH2k ;&end JCN2            ( short_addr short_delta short_i -- )
@@ -50,3 +96,30 @@ JMP2r
     &end
         POP2 POP2 POP2
 JMP2r
+
+
+@initStack ( -- )
+    ;Stack/data ;Stack/pointer STA2
+JMP2r
+
+@push ( obj -- addr )
+    ;Stack/pointer LDA2     ( obj ptr*              )
+    DUP2 INC2 INC2          ( obj ptr* ptr*+2       )
+    ;Stack/data LTH2        ( obj ptr* ptr*+2<&data )
+    ,&fail JCN              ( obj ptr*              )
+    ( -- Checker ici -- )
+        DUP2 ROT2 ROT2      ( ptr* obj ptr*         )
+        STA2                ( ptr*       ptr* = obj )
+        DUP2 INC2 INC2      ( ptr* ptr*+2           )
+        ;Stack/pointer STA2 ( ptr*     ptr = ptr*+2 )
+        ,&end JMP
+    &fail
+        POP2 POP2
+        #0000
+    &end
+JMP2r
+
+@Stack
+    &pointer $2
+    &data
+
