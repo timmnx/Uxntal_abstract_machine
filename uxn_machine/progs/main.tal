@@ -30,7 +30,9 @@
 
     #0001 Int ;push_obj JSR2    ( int* )
     #0002 Int ;push_obj JSR2    ( int* int'* )
+    #0003 Int ;push_obj JSR2
     Add ;push_obj JSR2            ( add* )
+    Add ;push_obj JSR2
     Id ;push_obj JSR2             ( add* id* )
 
     ;Stack ;Stack/pointer LDA2
@@ -38,13 +40,12 @@
     NewLine
 
     ;eval JSR2               ( sterm* )
-    PrintShort NewLine
-    PrintShort NewLine
+    DUP2 PrintShort NewLine
+    INC2 INC2 LDA2 PrintShort NewLine
     NewLine
 
     ;Stack ;Stack/pointer LDA2
     ;DumpMem JSR2
-    ( INC2 INC2 LDA2 PrintShort NewLine )
 
 BRK
 
@@ -53,3 +54,12 @@ BRK
 ~progs/print.tal
 
 ~progs/stack.tal
+
+( 
+- faire un gros rapport
+- mettre sur le gitlab
+- mettre a jour malloc
+- comment la générer ?
+    - prédicat et état en entrée, etc.
+- but inateignable : machine abstraite pour Uxn en Uxn
+ )

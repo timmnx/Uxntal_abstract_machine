@@ -10,7 +10,7 @@
 
 ( --------------------< Continuation type >-------------------- )
 ( type cont =                                                   )
-(   | Id                    ~> < 01 | 01 | >                    )
+(   | Id                    ~> < 01 | 00 | >                    )
 (   | Fn_add of int * cont  ~> < 02 | 02 | [int, *cont] >       )
 (   | Ar_add of t * cont    ~> < 03 | 02 | [*sterm, *cont] >    )
 (   | Fn_sub of int * cont  ~> < 04 | 02 | [int, *cont] >       )
