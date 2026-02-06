@@ -218,20 +218,20 @@ Ainsi, en _UXN_ on écrit un code assembleur en notation polonaise inversée.
 
 #figure(kind: "ex", supplement: [Exemple], caption: [calcul de $1+2$ en _UXN_ (en commentaire : l'état de la pile de travail).])[
   #algo()[
-    |0100 #comment[$triangle.small.l$]#i\
-      \#01 #comment[01 $triangle.small.l$]\
-      \#02 #comment[01 02 $triangle.small.l$]\
-      ADD #comment[03 $triangle.small.l$]\
-      \#04 #comment[03 04 $triangle.small.l$]\
-      MUL #comment[12 $triangle.small.l$]
+    |0100 #comment[\_]#i\
+      \#01 #comment[01 \_]\
+      \#02 #comment[01 02 \_]\
+      ADD #comment[03 \_]\
+      \#04 #comment[03 04 \_]\
+      MUL #comment[12 \_]
   ]
 ]
 
 Remarquons que sur l'exemple précédent, on peut déplacer des lignes sans que cela n'affecte le calcul. Par exemple, on pourrait remonter la ligne 5 en ligne 2 et tout ce passerait pareil. On aurait :
 $
-  #raw(lang:"c","// 04 01 02")
-  -->_"ADD" #raw(lang:"c","// 04 03")
-  -->_"MUL" #raw(lang:"c","// 12")
+  #raw(lang:"c","// 04 01 02 _")
+  -->_"ADD" #raw(lang:"c","// 04 03 _")
+  -->_"MUL" #raw(lang:"c","// 12 _")
 $
 
 == Représentation machine des objets
@@ -244,7 +244,7 @@ Pour la représentation des objets, j'ai décidé de m'inspirer de la représent
 - $data$ : est l'espace utilisable en mémoire, un tableau de $size$ shorts.
 On remarque alors qu'un objet occupe $2times(size+1)$ octets, soit $size+1$ _shorts_. Ainsi, le champs _data_ peut contenuir au plus $255$ shorts (car $size <= 255 = 2^8-1$).
 
-Il est intentionnel que les champs $tag$ et $size$ soient codés sur un octet chacun, ils sont contigus en mémoire et l'on ne travaillera qu'avec des _shorts_, ce qui est le cas de la concaténation de ces deux champs.
+Il est intentionnel que les champs $tag$ et $size$ soient codés sur un octet chacun, ils sont contigus en mémoire et l'on ne travaillera qu'avec des _shorts_, ce qui est le cas lors de la concaténation de ces deux champs.
 
 On appelle alors une case mémoire l'espace mémoire nécessaire pour stocker un _short_ alligné.
 
