@@ -1,0 +1,65 @@
+( falloc.tal )
+( It manages the memory in a file named ram.dat )
+(                                               )
+( We assume that each value stored is a short   )
+( i.e. 2 byte                                   )
+
+( devices )
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+
+( file )
+|a0 @File0 [ &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2 ]
+
+%EMIT { .Console/write DEO }
+%NewLine { #0a .Console/write DEO }
+%PrintSpace { #20 .Console/write DEO }
+
+%ToMask { #ff EOR #01 ADD }
+%PrintNibble ( nibble -- ) {
+    DUP LIT "0 ADD SWP
+    #09 GTH ToMask
+    LIT2 "a "9 #01 ADD SUB
+    AND ADD .Console/write DEO
+}
+( h -- h h -- h h "0 -- h S0 )
+( S0 h x09 -- S0 h>9 -- S0 Mh>9 )
+( S0 Mh>9 "a "9 x01 -- S0 Mh>9 "a "9+1 -- S0 Mh>9 d )
+( S0 d -- S -- )
+%PrintByte ( byte -- ) {
+    DUP
+    #04 SFT PrintNibble
+    #0f AND PrintNibble
+}
+%PrintAddr ( short -- ) { LDA PrintByte }
+%PrintShort ( short -- ) { SWP PrintByte PrintByte }
+
+( init )
+|0100
+    ;load-file JSR2
+
+BRK
+
+@load-file ( -- )
+    ;file/name .File0/name DEO2 ( set address of file path )
+    #0001 .File0/length DEO2 ( will attempt to read 255 bytes )
+
+    ( set address for the data to read, and do read )
+    ;file/data .File0/read DEO2
+
+    ( check the success byte and jump accordingly )
+    ( .File0/success DEI2 #0000 EQU2 ,&failed JCN )
+    .File0/success DEI2 PrintShort
+
+    JMP2r
+
+    &success
+        LIT "Y .Console/write DEO
+    JMP2r
+
+    &failed
+        LIT "N .Console/write DEO
+JMP2r
+
+@file
+    &name "test ". "txt 00
+    &data $ff ( reserving 255 bytes for the data )

@@ -1,0 +1,15 @@
+( expr )
+%Int { #0101 }
+%Add { #0202 }
+%Sub { #0302 }
+( cont )
+%Id { #0100 }
+%ArAdd { #0202 }
+%FnAdd { #0302 }
+%ArSub { #0402 }
+%FnSub { #0502 }
+( configuration )
+%Eval { #0102 }
+%Apply { #0202 }
+%Stop { #0301 }
+%Main { #0401 }

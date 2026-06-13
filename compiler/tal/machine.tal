@@ -1,0 +1,178 @@
+
+@step   ( ws: config  --- rs:  ) ( ws: config  --- rs:  )
+     ( ws: config config  --- rs:  )
+     ( ws: config  --- rs:  )
+  LDA2k Apply EQU2 ;step<Apply> JCN2  ( ws: config  --- rs:  )
+  LDA2k Eval EQU2 ;step<Eval> JCN2  ( ws: config  --- rs:  )
+  LDA2k Main EQU2 ;step<Main> JCN2  ( ws: config  --- rs:  )
+  LDA2k Stop EQU2 ;step<Stop> JCN2  ( ws: config  --- rs:  )
+  #0000 JSR2r
+
+@step<Stop>   ( ws: config  --- rs:  ) ( ws: %ret  --- rs:  )
+  DUP2   ( ws: config config  --- rs:  )
+   #0002 ADD2 LDA2   ( ws: config  --- rs:  ) ( ws: config[0] config  --- rs:  )
+   Stop ;push_obj JSR2   ( ws: config[0] config  --- rs:  ) ( ws: Stop config  --- rs:  )
+   STH2 POP2 STH2r
+   JMP2r ( ws: config  --- rs:  ) ( ws: %ret  --- rs:  )
+
+@step<Main>   ( ws: config  --- rs:  ) ( ws: %ret  --- rs:  )
+  Id ;push_obj JSR2   ( ws: config  --- rs:  ) ( ws: Id config  --- rs:  )
+   STH2 DUP2 STH2r SWP2   ( ws: config Id config  --- rs:  )
+   #0002 ADD2 LDA2   ( ws: Id config  --- rs:  ) ( ws: config[0] Id config  --- rs:  )
+   Int ;push_obj JSR2   ( ws: config[0] Id config  --- rs:  ) ( ws: Int Id config  --- rs:  )
+   Eval ;push_obj JSR2   ( ws: Int Id config  --- rs:  ) ( ws: Eval config  --- rs:  )
+   STH2 POP2 STH2r
+   JMP2r ( ws: config  --- rs:  ) ( ws: %ret  --- rs:  )
+
+@step<Eval>   ( ws: config  --- rs:  ) ( ws: config[0] config  --- rs:  )
+  DUP2   ( ws: config config  --- rs:  )
+   #0002 ADD2 LDA2   ( ws: config  --- rs:  )
+  LDA2k Add EQU2 ;step<Eval><Add> JCN2  ( ws: config[0] config  --- rs:  )
+  LDA2k Int EQU2 ;step<Eval><Int> JCN2  ( ws: config[0] config  --- rs:  )
+  LDA2k Sub EQU2 ;step<Eval><Sub> JCN2  ( ws: config[0] config  --- rs:  )
+  #0000 JSR2r
+
+@step<Eval><Sub>   ( ws: config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+  STH2 DUP2 STH2r SWP2   ( ws: config config[0] config  --- rs:  )
+   #0004 ADD2 LDA2   ( ws: config[0] config  --- rs:  ) ( ws: config[1] config[0] config  --- rs:  )
+   STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2   ( ws: config config[1] config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0004 ADD2 LDA2   ( ws: config[1] config[0] config  --- rs:  ) ( ws: config[0][1] config[1] config[0] config  --- rs:  )
+   ArSub ;push_obj JSR2   ( ws: config[0][1] config[1] config[0] config  --- rs:  ) ( ws: ArSub config[0] config  --- rs:  )
+   STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2   ( ws: config ArSub config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: ArSub config[0] config  --- rs:  ) ( ws: config[0][0] ArSub config[0] config  --- rs:  )
+   Eval ;push_obj JSR2   ( ws: config[0][0] ArSub config[0] config  --- rs:  ) ( ws: Eval config[0] config  --- rs:  )
+   STH2 POP2 POP2 STH2r
+   JMP2r ( ws: config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+
+@step<Eval><Int>   ( ws: config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+  STH2 DUP2 STH2r SWP2   ( ws: config config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: config[0] config  --- rs:  ) ( ws: config[0][0] config[0] config  --- rs:  )
+   Int ;push_obj JSR2   ( ws: config[0][0] config[0] config  --- rs:  ) ( ws: Int config[0] config  --- rs:  )
+   STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2   ( ws: config Int config[0] config  --- rs:  )
+   #0004 ADD2 LDA2   ( ws: Int config[0] config  --- rs:  ) ( ws: config[1] Int config[0] config  --- rs:  )
+   Apply ;push_obj JSR2   ( ws: config[1] Int config[0] config  --- rs:  ) ( ws: Apply config[0] config  --- rs:  )
+   STH2 POP2 POP2 STH2r
+   JMP2r ( ws: config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+
+@step<Eval><Add>   ( ws: config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+  STH2 DUP2 STH2r SWP2   ( ws: config config[0] config  --- rs:  )
+   #0004 ADD2 LDA2   ( ws: config[0] config  --- rs:  ) ( ws: config[1] config[0] config  --- rs:  )
+   STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2   ( ws: config config[1] config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0004 ADD2 LDA2   ( ws: config[1] config[0] config  --- rs:  ) ( ws: config[0][1] config[1] config[0] config  --- rs:  )
+   ArAdd ;push_obj JSR2   ( ws: config[0][1] config[1] config[0] config  --- rs:  ) ( ws: ArAdd config[0] config  --- rs:  )
+   STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2   ( ws: config ArAdd config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: ArAdd config[0] config  --- rs:  ) ( ws: config[0][0] ArAdd config[0] config  --- rs:  )
+   Eval ;push_obj JSR2   ( ws: config[0][0] ArAdd config[0] config  --- rs:  ) ( ws: Eval config[0] config  --- rs:  )
+   STH2 POP2 POP2 STH2r
+   JMP2r ( ws: config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+
+@step<Apply>   ( ws: config  --- rs:  ) ( ws: config[0] config  --- rs:  )
+  DUP2   ( ws: config config  --- rs:  )
+   #0002 ADD2 LDA2   ( ws: config  --- rs:  )
+  LDA2k ArAdd EQU2 ;step<Apply><ArAdd> JCN2  ( ws: config[0] config  --- rs:  )
+  LDA2k ArSub EQU2 ;step<Apply><ArSub> JCN2  ( ws: config[0] config  --- rs:  )
+  LDA2k FnAdd EQU2 ;step<Apply><FnAdd> JCN2  ( ws: config[0] config  --- rs:  )
+  LDA2k FnSub EQU2 ;step<Apply><FnSub> JCN2  ( ws: config[0] config  --- rs:  )
+  LDA2k Id EQU2 ;step<Apply><Id> JCN2  ( ws: config[0] config  --- rs:  )
+  #0000 JSR2r
+
+@step<Apply><Id>   ( ws: config[0] config  --- rs:  ) ( ws: config[1] config[0] config  --- rs:  )
+  STH2 DUP2 STH2r SWP2   ( ws: config config[0] config  --- rs:  )
+   #0004 ADD2 LDA2   ( ws: config[0] config  --- rs:  )
+  LDA2k Int EQU2 ;step<Apply><Id><Int> JCN2  ( ws: config[1] config[0] config  --- rs:  )
+  #0000 JSR2r
+
+@step<Apply><Id><Int>   ( ws: config[1] config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+  STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2   ( ws: config config[1] config[0] config  --- rs:  )
+   #0004 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: config[1] config[0] config  --- rs:  ) ( ws: config[1][0] config[1] config[0] config  --- rs:  )
+   Stop ;push_obj JSR2   ( ws: config[1][0] config[1] config[0] config  --- rs:  ) ( ws: Stop config[1] config[0] config  --- rs:  )
+   STH2 POP2 POP2 POP2 STH2r
+   JMP2r ( ws: config[1] config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+
+@step<Apply><FnSub>   ( ws: config[0] config  --- rs:  ) ( ws: config[0][0] config[0] config  --- rs:  )
+  STH2 DUP2 STH2r SWP2   ( ws: config config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: config[0] config  --- rs:  )
+  LDA2k Int EQU2 ;step<Apply><FnSub><Int> JCN2  ( ws: config[0][0] config[0] config  --- rs:  )
+  #0000 JSR2r
+
+@step<Apply><FnSub><Int>   ( ws: config[0][0] config[0] config  --- rs:  ) ( ws: config[1] config[0][0] config[0] config  --- rs:  )
+  STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2   ( ws: config config[0][0] config[0] config  --- rs:  )
+   #0004 ADD2 LDA2   ( ws: config[0][0] config[0] config  --- rs:  )
+  LDA2k Int EQU2 ;step<Apply><FnSub><Int><Int> JCN2  ( ws: config[1] config[0][0] config[0] config  --- rs:  )
+  #0000 JSR2r
+
+@step<Apply><FnSub><Int><Int>   ( ws: config[1] config[0][0] config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+  STH2 STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2 STH2r SWP2   ( ws: config config[1] config[0][0] config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0004 ADD2 LDA2   ( ws: config[1] config[0][0] config[0] config  --- rs:  ) ( ws: config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   STH2 STH2 STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2 STH2r SWP2 STH2r SWP2   ( ws: config config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0002 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: config[0][1] config[1] config[0][0] config[0] config  --- rs:  ) ( ws: config[0][0][0] config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   STH2 STH2 STH2 STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2 STH2r SWP2 STH2r SWP2 STH2r SWP2   ( ws: config config[0][0][0] config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   #0004 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: config[0][0][0] config[0][1] config[1] config[0][0] config[0] config  --- rs:  ) ( ws: config[1][0] config[0][0][0] config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+    SUB2   ( ws: config[0][1] config[1] config[0][0] config[0] config  --- rs:  ) ( ws: SUB2 config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   Int ;push_obj JSR2   ( ws: SUB2 config[0][1] config[1] config[0][0] config[0] config  --- rs:  ) ( ws: Int config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   Eval ;push_obj JSR2   ( ws: Int config[0][1] config[1] config[0][0] config[0] config  --- rs:  ) ( ws: Eval config[1] config[0][0] config[0] config  --- rs:  )
+   STH2 POP2 POP2 POP2 POP2 STH2r
+   JMP2r ( ws: config[1] config[0][0] config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+
+@step<Apply><FnAdd>   ( ws: config[0] config  --- rs:  ) ( ws: config[0][0] config[0] config  --- rs:  )
+  STH2 DUP2 STH2r SWP2   ( ws: config config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: config[0] config  --- rs:  )
+  LDA2k Int EQU2 ;step<Apply><FnAdd><Int> JCN2  ( ws: config[0][0] config[0] config  --- rs:  )
+  #0000 JSR2r
+
+@step<Apply><FnAdd><Int>   ( ws: config[0][0] config[0] config  --- rs:  ) ( ws: config[1] config[0][0] config[0] config  --- rs:  )
+  STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2   ( ws: config config[0][0] config[0] config  --- rs:  )
+   #0004 ADD2 LDA2   ( ws: config[0][0] config[0] config  --- rs:  )
+  LDA2k Int EQU2 ;step<Apply><FnAdd><Int><Int> JCN2  ( ws: config[1] config[0][0] config[0] config  --- rs:  )
+  #0000 JSR2r
+
+@step<Apply><FnAdd><Int><Int>   ( ws: config[1] config[0][0] config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+  STH2 STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2 STH2r SWP2   ( ws: config config[1] config[0][0] config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0004 ADD2 LDA2   ( ws: config[1] config[0][0] config[0] config  --- rs:  ) ( ws: config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   STH2 STH2 STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2 STH2r SWP2 STH2r SWP2   ( ws: config config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0002 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: config[0][1] config[1] config[0][0] config[0] config  --- rs:  ) ( ws: config[0][0][0] config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   STH2 STH2 STH2 STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2 STH2r SWP2 STH2r SWP2 STH2r SWP2   ( ws: config config[0][0][0] config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   #0004 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: config[0][0][0] config[0][1] config[1] config[0][0] config[0] config  --- rs:  ) ( ws: config[1][0] config[0][0][0] config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+    ADD2   ( ws: config[0][1] config[1] config[0][0] config[0] config  --- rs:  ) ( ws: ADD2 config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   Int ;push_obj JSR2   ( ws: ADD2 config[0][1] config[1] config[0][0] config[0] config  --- rs:  ) ( ws: Int config[0][1] config[1] config[0][0] config[0] config  --- rs:  )
+   Eval ;push_obj JSR2   ( ws: Int config[0][1] config[1] config[0][0] config[0] config  --- rs:  ) ( ws: Eval config[1] config[0][0] config[0] config  --- rs:  )
+   STH2 POP2 POP2 POP2 POP2 STH2r
+   JMP2r ( ws: config[1] config[0][0] config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+
+@step<Apply><ArSub>   ( ws: config[0] config  --- rs:  ) ( ws: config[1] config[0] config  --- rs:  )
+  STH2 DUP2 STH2r SWP2   ( ws: config config[0] config  --- rs:  )
+   #0004 ADD2 LDA2   ( ws: config[0] config  --- rs:  )
+  LDA2k Int EQU2 ;step<Apply><ArSub><Int> JCN2  ( ws: config[1] config[0] config  --- rs:  )
+  #0000 JSR2r
+
+@step<Apply><ArSub><Int>   ( ws: config[1] config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+  STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2   ( ws: config config[1] config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0004 ADD2 LDA2   ( ws: config[1] config[0] config  --- rs:  ) ( ws: config[0][1] config[1] config[0] config  --- rs:  )
+   STH2 STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2 STH2r SWP2   ( ws: config config[0][1] config[1] config[0] config  --- rs:  )
+   #0004 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: config[0][1] config[1] config[0] config  --- rs:  ) ( ws: config[1][0] config[0][1] config[1] config[0] config  --- rs:  )
+   Int ;push_obj JSR2   ( ws: config[1][0] config[0][1] config[1] config[0] config  --- rs:  ) ( ws: Int config[0][1] config[1] config[0] config  --- rs:  )
+   FnSub ;push_obj JSR2   ( ws: Int config[0][1] config[1] config[0] config  --- rs:  ) ( ws: FnSub config[1] config[0] config  --- rs:  )
+   STH2 STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2 STH2r SWP2   ( ws: config FnSub config[1] config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: FnSub config[1] config[0] config  --- rs:  ) ( ws: config[0][0] FnSub config[1] config[0] config  --- rs:  )
+   Eval ;push_obj JSR2   ( ws: config[0][0] FnSub config[1] config[0] config  --- rs:  ) ( ws: Eval config[1] config[0] config  --- rs:  )
+   STH2 POP2 POP2 POP2 STH2r
+   JMP2r ( ws: config[1] config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+
+@step<Apply><ArAdd>   ( ws: config[0] config  --- rs:  ) ( ws: config[1] config[0] config  --- rs:  )
+  STH2 DUP2 STH2r SWP2   ( ws: config config[0] config  --- rs:  )
+   #0004 ADD2 LDA2   ( ws: config[0] config  --- rs:  )
+  LDA2k Int EQU2 ;step<Apply><ArAdd><Int> JCN2  ( ws: config[1] config[0] config  --- rs:  )
+  #0000 JSR2r
+
+@step<Apply><ArAdd><Int>   ( ws: config[1] config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )
+  STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2   ( ws: config config[1] config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0004 ADD2 LDA2   ( ws: config[1] config[0] config  --- rs:  ) ( ws: config[0][1] config[1] config[0] config  --- rs:  )
+   STH2 STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2 STH2r SWP2   ( ws: config config[0][1] config[1] config[0] config  --- rs:  )
+   #0004 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: config[0][1] config[1] config[0] config  --- rs:  ) ( ws: config[1][0] config[0][1] config[1] config[0] config  --- rs:  )
+   Int ;push_obj JSR2   ( ws: config[1][0] config[0][1] config[1] config[0] config  --- rs:  ) ( ws: Int config[0][1] config[1] config[0] config  --- rs:  )
+   FnAdd ;push_obj JSR2   ( ws: Int config[0][1] config[1] config[0] config  --- rs:  ) ( ws: FnAdd config[1] config[0] config  --- rs:  )
+   STH2 STH2 STH2 DUP2 STH2r SWP2 STH2r SWP2 STH2r SWP2   ( ws: config FnAdd config[1] config[0] config  --- rs:  )
+   #0002 ADD2 LDA2 #0002 ADD2 LDA2   ( ws: FnAdd config[1] config[0] config  --- rs:  ) ( ws: config[0][0] FnAdd config[1] config[0] config  --- rs:  )
+   Eval ;push_obj JSR2   ( ws: config[0][0] FnAdd config[1] config[0] config  --- rs:  ) ( ws: Eval config[1] config[0] config  --- rs:  )
+   STH2 POP2 POP2 POP2 STH2r
+   JMP2r ( ws: config[1] config[0] config  --- rs:  ) ( ws: %ret  --- rs:  )

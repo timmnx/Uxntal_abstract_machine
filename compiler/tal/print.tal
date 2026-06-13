@@ -1,0 +1,52 @@
+( print.tal )
+
+@DumpLine ( short -- )
+    #04 SFT2 #40 SFT2   ( short_addr -- )
+    DUP2 PrintShort
+    LIT ": EMIT
+
+    #0000                   ( short_addr 0000 -- )
+    &forloop                  ( short_addr short_i -- )
+        DUP2 #000f SWP2     ( short_addr short_i 10 short_i -- )
+        LTH2 ;&endfor JCN2    ( short_addr short_i -- )
+        PrintSpace
+        SWP2 DUP2             ( short_i short_addr short_addr -- )
+        PrintAddr             ( short_i short_addr -- )
+        INC2 SWP2 INC2        ( short_addr+1 short_i+1 -- )
+        ;&forloop JMP2
+    &endfor
+        POP2 POP2             ( -- )
+JMP2r
+
+@DumpMem ( short_addr1 short_addr2 -- ) ( Precondition : short_addr1 < short_addr2 )
+    ( OVR2 OVR2 SWP2      ( short_addr1 short_addr2 short_addr2 short_addr1 -- )
+    #0000 ROT2 ROT2   ( short_addr1 short_addr2 0000 short_addr2 short_addr1 -- )
+    LTH2 ;&end JCN2     ( short_addr1 short_addr2 0000 -- )
+    POP2                ( short_addr1 short_addr2 -- )
+    OVR2 SUB2 #04 SFT2  short_addr1 short_delta -- )
+
+    DUP2 PrintShort
+    PrintSpace PrintSpace PrintSpace
+    LIT2 "f "e LIT2 "d "c LIT2 "b "a LIT2 "9 "8
+    LIT2 "7 "6 LIT2 "5 "4 LIT2 "3 "2 LIT2 "1 "0
+    EMIT PrintSpace PrintSpace EMIT PrintSpace PrintSpace
+    EMIT PrintSpace PrintSpace EMIT PrintSpace PrintSpace
+    EMIT PrintSpace PrintSpace EMIT PrintSpace PrintSpace
+    EMIT PrintSpace PrintSpace EMIT PrintSpace PrintSpace
+    EMIT PrintSpace PrintSpace EMIT PrintSpace PrintSpace
+    EMIT PrintSpace PrintSpace EMIT PrintSpace PrintSpace
+    EMIT PrintSpace PrintSpace EMIT PrintSpace PrintSpace
+    EMIT PrintSpace PrintSpace EMIT NewLine
+    
+    #04 SFT2 OVR2 #04 SFT2 SUB2
+    #0000  ( short_addr short_delta 0000 -- )
+    &forloop                        ( short_addr short_delta short_i -- )
+        LTH2k ;&end JCN2            ( short_addr short_delta short_i -- )
+        ROT2 DUP2 ;DumpLine JSR2    ( short_delta short_i short_addr -- )
+        NewLine
+        #0010 ADD2                ( short_delta short_i short_addr+16 -- )
+        ROT2 ROT2 INC2              ( short_addr+16 short_delta short_i+1 -- )
+        ;&forloop JMP2
+    &end
+        POP2 POP2 POP2
+JMP2r

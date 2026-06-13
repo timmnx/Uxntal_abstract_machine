@@ -1,0 +1,88 @@
+( main.tal )
+( devices )
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+
+~print_h.tal
+
+~machine_h.tal
+
+( init )
+|0100
+    ;initStack JSR2
+
+    ;Stack PrintShort
+    PrintSpace LIT "- EMIT LIT "> EMIT PrintSpace
+    ;Stack/data PrintShort
+    ( ;Stack/pointer LDA2 PrintShort )
+    NewLine
+    NewLine
+
+    Id ;push_obj JSR2             ( id )
+    #0001 Int ;push_obj JSR2    ( int1 id )
+    #0002 Int ;push_obj JSR2    ( int2 int1 id )
+    #0003 Int ;push_obj JSR2    ( int3 int2 int1 id )
+    Add ;push_obj JSR2            ( add1 int1 id )
+    Add ;push_obj JSR2            ( add2 id )
+    Eval ;push_obj JSR2           ( eval )
+    DUP2 PrintShort NewLine NewLine
+
+    ;Stack/data OVR2 #0010 ADD2
+    ;DumpMem JSR2
+    NewLine
+
+    ;step JSR2
+    ;printObjMem JSR2
+    DUP2 PrintShort NewLine NewLine
+
+    ;step JSR2
+    ( DUP2 PrintShort NewLine
+    DUP2 DumpLine )
+    ;printObjMem JSR2
+
+    ;step JSR2
+    ;printObjMem JSR2
+    
+    ;step JSR2
+    ;printObjMem JSR2
+    
+    ;step JSR2
+    ;printObjMem JSR2
+    
+    ;step JSR2
+    ;printObjMem JSR2
+    
+    ;step JSR2
+    ;printObjMem JSR2
+    
+    ;step JSR2
+    ;printObjMem JSR2
+    
+    ;step JSR2
+    ;printObjMem JSR2
+    
+    ;step JSR2
+    ;printObjMem JSR2
+    
+    ;step JSR2
+    ;printObjMem JSR2
+    
+    ;step JSR2
+    ;printObjMem JSR2
+    DUP2 PrintShort NewLine NewLine
+
+BRK
+
+@printObjMem
+    NewLine
+    DUP2 PrintShort NewLine NewLine
+    DUP2 #0010 ADD2
+    ;Stack SWP2
+    ;DumpMem JSR2
+    JMP2r
+
+~machine.tal
+
+~print.tal
+
+~stack.tal
+

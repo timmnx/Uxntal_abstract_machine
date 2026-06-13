@@ -1,0 +1,4 @@
+(library
+ (name compiler)
+ (preprocess
+  (pps ppx_deriving.show)))

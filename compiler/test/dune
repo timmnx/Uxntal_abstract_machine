@@ -1,0 +1,51 @@
+(test
+ (name test_compiler)
+ (modules test_compiler)
+ (libraries compiler machine1)
+ ; (preprocess (pps ppx_jane))
+ ; (preprocess (pps ppx_inline_test))
+ ; (inline_tests)
+ ; (preprocess
+ ;  (pps ppx_inline_test))
+ )
+
+; (library
+;  (name machine0_test)
+;  (modules machine0_test)
+;  (libraries compiler)
+;  (inline_tests)
+;  (preprocess
+;   (pps ppx_expect))
+; )
+; (library
+;  (name machine0)
+;  (modules machine0)
+;  (libraries compiler)
+;  (inline_tests)
+;  (preprocess
+;   (pps ppx_expect))
+; )
+
+(library
+ (name machine1)
+ (modules machine1)
+ (libraries compiler)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect)))
+
+; (library
+;  (name machine2)
+;  (modules machine2)
+;  (libraries compiler)
+;  (inline_tests)
+;  (preprocess
+;   (pps ppx_expect)))
+
+(library
+ (name machine2_test)
+ (modules machine2_test machine2)
+ (libraries compiler)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect)))
