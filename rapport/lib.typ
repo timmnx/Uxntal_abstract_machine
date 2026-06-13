@@ -61,6 +61,7 @@
     let prefix = (
       if fig.kind == table [TABLE]
       else if fig.kind == image [Figure]
+      else if fig.kind == "ex" [Exemple]
       else [#fig.supplement]
     )
     let numbers = numbering(fig.numbering, ..fig.counter.at(fig.location()))
